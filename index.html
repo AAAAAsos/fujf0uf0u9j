@@ -272,162 +272,163 @@
     </div>
 
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <script>
-        document.addEventListener('DOMContentLoaded', (event) => {
-            // Telegram Web App
-            const tg = window.Telegram.WebApp;
-            tg.ready();
+<script>
+    document.addEventListener('DOMContentLoaded', (event) => {
+        // Telegram Web App
+        const tg = window.Telegram.WebApp;
+        tg.ready();
 
-            // Загружаем информацию о пользователе из Telegram Mini App
-            const user = tg.initDataUnsafe?.user;
-            if (user) {
-                const userAvatar = document.getElementById('userAvatar');
-                const userName = document.getElementById('userName');
-                userAvatar.src = user.photo_url || 'default-avatar.png';
-                userName.textContent = user.first_name + (user.last_name ? ' ' + user.last_name : '');
+        // Загружаем информацию о пользователе из Telegram Mini App
+        const user = tg.initDataUnsafe?.user;
+        if (user) {
+            const userAvatar = document.getElementById('userAvatar');
+            const userName = document.getElementById('userName');
+            userAvatar.src = user.photo_url || 'default-avatar.png';
+            userName.textContent = user.first_name + (user.last_name ? ' ' + user.last_name : '');
+        }
+
+        // Загружаем баланс и энергию из localStorage или задаем начальные значения
+        let balance = parseInt(localStorage.getItem('balance') || '0', 10);
+        let energy = parseInt(localStorage.getItem('energy') || '100', 10);
+        let energyLimit = parseInt(localStorage.getItem('energyLimit') || '100', 10);
+        let clickPower = parseInt(localStorage.getItem('clickPower') || '1', 10);
+        let totalClicks = parseInt(localStorage.getItem('totalClicks') || '0', 10);
+
+        const balanceElement = document.getElementById('balance');
+        const coinElement = document.getElementById('coin');
+        const energyElement = document.getElementById('energyCount');
+        const container = document.querySelector('.container');
+        const upgradeButton = document.getElementById('upgradeButton');
+        const friendsButton = document.getElementById('friendsButton');
+        const upgradePanel = document.getElementById('upgradePanel');
+        const friendsPanel = document.getElementById('friendsPanel');
+        const energyLimitButton = document.getElementById('energyLimitButton');
+        const multiTapButton = document.getElementById('multiTapButton');
+        const friendList = document.getElementById('friendList');
+        const inviteFriendButton = document.getElementById('inviteFriendButton');
+
+        // Обновляем баланс на экране
+        function updateBalance() {
+            balanceElement.textContent = `${balance}`;
+        }
+
+        // Обновляем количество энергии на экране
+        function updateEnergy() {
+            energyElement.textContent = `Энергия: ${energy}`;
+        }
+
+        updateBalance();
+        updateEnergy();
+
+        // Добавляем обработчик клика по монете
+        coinElement.addEventListener('click', (e) => {
+            if (energy > 0) {
+                balance += clickPower;
+                energy--;
+                totalClicks += clickPower;
+                updateBalance();
+                updateEnergy();
+                
+                // Сохраняем баланс, энергию и количество кликов в localStorage
+                localStorage.setItem('balance', balance);
+                localStorage.setItem('energy', energy);
+                localStorage.setItem('totalClicks', totalClicks);
+
+                // Отправляем обновленное количество кликов на сервер
+                fetch('https://your-server-endpoint.com/updateClicks', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ totalClicks: totalClicks })
+                }).catch((error) => {
+                    console.error('Ошибка при отправке количества кликов:', error);
+                });
+
+                // Создаем плавающий текст, отображающий текущий множитель клика
+                const floatingText = document.createElement('div');
+                floatingText.textContent = `+${clickPower}`;
+                floatingText.className = 'floating-text';
+                floatingText.style.left = `${e.clientX - 50}px`;
+                floatingText.style.top = `${e.clientY - 50}px`;
+                container.appendChild(floatingText);
+
+                // Удаляем элемент после завершения анимации
+                floatingText.addEventListener('animationend', () => {
+                    container.removeChild(floatingText);
+                });
             }
+        });
 
-            // Загружаем баланс и энергию из localStorage или задаем начальные значения
-            let balance = localStorage.getItem('balance') || 0;
-            balance = parseInt(balance);
-            let energy = localStorage.getItem('energy') || 100;
-            energy = parseInt(energy);
-            let energyLimit = localStorage.getItem('energyLimit') || 100;
-            energyLimit = parseInt(energyLimit);
-            let clickPower = localStorage.getItem('clickPower') || 1;
-            clickPower = parseInt(clickPower);
-            let totalClicks = localStorage.getItem('totalClicks') || 0;
-            totalClicks = parseInt(totalClicks);
-
-            const balanceElement = document.getElementById('balance');
-            const coinElement = document.getElementById('coin');
-            const energyElement = document.getElementById('energyCount');
-            const container = document.querySelector('.container');
-            const upgradeButton = document.getElementById('upgradeButton');
-            const friendsButton = document.getElementById('friendsButton');
-            const upgradePanel = document.getElementById('upgradePanel');
-            const friendsPanel = document.getElementById('friendsPanel');
-            const energyLimitButton = document.getElementById('energyLimitButton');
-            const multiTapButton = document.getElementById('multiTapButton');
-            const friendList = document.getElementById('friendList');
-            const inviteFriendButton = document.getElementById('inviteFriendButton');
-
-            // Обновляем баланс на экране
-            function updateBalance() {
-                balanceElement.textContent = `${balance}`;
-            }
-
-            // Обновляем количество энергии на экране
-            function updateEnergy() {
-                energyElement.textContent = `Энергия: ${energy}`;
-            }
-
-            updateBalance();
-            updateEnergy();
-
-            // Добавляем обработчик клика по монете
-            coinElement.addEventListener('click', (e) => {
-                if (energy > 0) {
-                    balance += clickPower;
-                    energy--;
-                    totalClicks += clickPower;
-                    updateBalance();
-                    updateEnergy();
-                    // Сохраняем баланс, энергию и количество кликов в localStorage
-                    localStorage.setItem('balance', balance);
-                    localStorage.setItem('energy', energy);
-                    localStorage.setItem('totalClicks', totalClicks);
-
-                    // Отправляем обновленное количество кликов на сервер
-                    fetch('https://your-server-endpoint.com/updateClicks', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({ totalClicks: totalClicks })
-                    }).catch((error) => {
-                        console.error('Ошибка при отправке количества кликов:', error);
-                    });
-
-                    // Создаем плавающий текст, отображающий текущий множитель клика
-                    const floatingText = document.createElement('div');
-                    floatingText.textContent = `+${clickPower}`;
-                    floatingText.className = 'floating-text';
-                    floatingText.style.left = `${e.clientX - 50}px`;
-                    floatingText.style.top = `${e.clientY - 50}px`;
-                    container.appendChild(floatingText);
-
-                    // Удаляем элемент после завершения анимации
-                    floatingText.addEventListener('animationend', () => {
-                        container.removeChild(floatingText);
-                    });
-                }
-            });
-
-            // Восстанавливаем энергию с использованием requestAnimationFrame
-            function restoreEnergy() {
-                if (energy < energyLimit) {
-                    energy++;
-                    updateEnergy();
-                    localStorage.setItem('energy', energy);
-                }
-                requestAnimationFrame(restoreEnergy);
+        // Восстанавливаем энергию с использованием requestAnimationFrame
+        function restoreEnergy() {
+            if (energy < energyLimit) {
+                energy++;
+                updateEnergy();
+                localStorage.setItem('energy', energy);
             }
             requestAnimationFrame(restoreEnergy);
+        }
+        requestAnimationFrame(restoreEnergy);
 
-            // Открываем и закрываем панель прокачки
-            upgradeButton.addEventListener('click', () => {
-                upgradePanel.style.display = upgradePanel.style.display === 'none' || upgradePanel.style.display === '' ? 'flex' : 'none';
-            });
+        // Открываем и закрываем панель прокачки
+        upgradeButton.addEventListener('click', () => {
+            upgradePanel.style.display = upgradePanel.style.display === 'none' || upgradePanel.style.display === '' ? 'flex' : 'none';
+        });
 
-            
+        // Открываем и закрываем панель друзей
+        friendsButton.addEventListener('click', () => {
+            friendsPanel.style.display = friendsPanel.style.display === 'none' || friendsPanel.style.display === '' ? 'flex' : 'none';
+        });
 
-            // Закрытие панели друзей
-            document.getElementById('closeFriendsPanel').addEventListener('click', () => {
-                friendsPanel.style.display = 'none';
-            });
-            });
+        // Добавляем кнопку закрытия панели друзей
+        const closeFriendsButton = document.createElement('button');
+        closeFriendsButton.textContent = 'Закрыть';
+        closeFriendsButton.className = 'close-button';
+        closeFriendsButton.id = 'closeFriendsPanel';
+        friendsPanel.appendChild(closeFriendsButton);
+        closeFriendsButton.addEventListener('click', () => {
+            friendsPanel.style.display = 'none';
+        });
 
-            // Заполнение списка друзей (имитация получения данных)
-            function loadFriends() {
-                // Получение списка друзей из внешнего источника или динамическое заполнение
-            }
-            loadFriends();
+        // Заполнение списка друзей (имитация получения данных)
+        function loadFriends() {
+            // Получение списка друзей из внешнего источника или динамическое заполнение
+        }
+        loadFriends();
 
-            // Генерация реферальной ссылки и копирование
-            inviteFriendButton.addEventListener('click', () => {
-                const referralLink = `https://t.me/RobuxTapBot/start?startapp=${user?.id}`;
-                navigator.clipboard.writeText(referralLink).then(() => {
-                    alert('Реферальная ссылка скопирована!');
-                }).catch((error) => {
-                    console.error('Ошибка при копировании реферальной ссылки:', error);
-                });
-            });
-
-            // Обработчик для увеличения лимита энергии
-            energyLimitButton.addEventListener('click', () => {
-                if (balance >= 200) {
-                    balance -= 200;
-                    energyLimit += 100;
-                    updateBalance();
-                    localStorage.setItem('balance', balance);
-                    localStorage.setItem('energyLimit', energyLimit);
-                }
-            });
-
-            // Обработчик для увеличения множителя клика
-            multiTapButton.addEventListener('click', () => {
-                if (balance >= 200) {
-                    balance -= 200;
-                    clickPower += 3;
-                    updateBalance();
-                    localStorage.setItem('balance', balance);
-                    localStorage.setItem('clickPower', clickPower);
-                }
+        // Генерация реферальной ссылки и копирование
+        inviteFriendButton.addEventListener('click', () => {
+            const referralLink = `http://t.me/RobuxTapBot/RobuxTap=${user?.id}`;
+            navigator.clipboard.writeText(referralLink).then(() => {
+                alert('Реферальная ссылка скопирована!');
+            }).catch((error) => {
+                console.error('Ошибка при копировании реферальной ссылки:', error);
             });
         });
-    </script>
-</body>
-</html>
+
+        // Обработчик для увеличения лимита энергии
+        energyLimitButton.addEventListener('click', () => {
+            if (balance >= 200) {
+                balance -= 200;
+                energyLimit += 100;
+                updateBalance();
+                localStorage.setItem('balance', balance);
+                localStorage.setItem('energyLimit', energyLimit);
+            }
+        });
+
+        // Обработчик для увеличения множителя клика
+        multiTapButton.addEventListener('click', () => {
+            if (balance >= 200) {
+                balance -= 200;
+                clickPower += 3;
+                updateBalance();
+                localStorage.setItem('balance', balance);
+                localStorage.setItem('clickPower', clickPower);
+            }
+        });
+    });
+</script>
 
 
