@@ -264,9 +264,8 @@
         </div>
     </div>
 
-    <div class="friends-panel" id="friendsPanel">
-        <h2>Список ваших друзей</h2>
-        <div class="friend-list" id="friendList">
+    <button class="close-button" id="closeFriendsPanel">Закрыть</button>
+    
             <!-- Список друзей будет динамически заполнен -->
         </div>
         <button class="invite-button" id="inviteFriendButton">Пригласить друга</button>
@@ -381,9 +380,12 @@
                 upgradePanel.style.display = upgradePanel.style.display === 'none' || upgradePanel.style.display === '' ? 'flex' : 'none';
             });
 
-            // Открываем и закрываем панель друзей
-            friendsButton.addEventListener('click', () => {
-                friendsPanel.style.display = friendsPanel.style.display === 'none' || friendsPanel.style.display === '' ? 'flex' : 'none';
+            
+
+            // Закрытие панели друзей
+            document.getElementById('closeFriendsPanel').addEventListener('click', () => {
+                friendsPanel.style.display = 'none';
+            });
             });
 
             // Заполнение списка друзей (имитация получения данных)
@@ -427,4 +429,5 @@
     </script>
 </body>
 </html>
+
 
